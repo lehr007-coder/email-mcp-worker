@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
 
       - name: Install dependencies
         run: npm install --omit=optional 2>/dev/null || true
@@ -31,16 +31,17 @@ jobs:
           FOLLOW_UP_BOSS_X_SYSTEM: ${{ secrets.FOLLOW_UP_BOSS_X_SYSTEM }}
           FOLLOW_UP_BOSS_X_SYSTEM_KEY: ${{ secrets.FOLLOW_UP_BOSS_X_SYSTEM_KEY }}
         run: |
-          echo "✅ Deployment ready with all configured secrets"
-          echo "Cloudflare Account: $CLOUDFLARE_ACCOUNT_ID"
-          echo "Follow Up Boss System: $FOLLOW_UP_BOSS_X_SYSTEM"
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "❌ CLOUDFLARE_API_TOKEN is empty — secret not visible to this repo"
+            exit 1
+          fi
+          echo "✅ Secrets present"
 
           if [ -f "wrangler.toml" ]; then
             npm install -g wrangler
             wrangler deploy
           else
             echo "⚠️  No wrangler.toml found - skipping deployment"
-            echo "To enable deployment, create a wrangler.toml configuration file"
           fi
 
       - name: Deployment Status
